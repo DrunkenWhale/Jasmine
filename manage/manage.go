@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // manager is not a node
@@ -51,13 +52,16 @@ func (m *Manager) Query(key string) ([]byte, error) {
 
 func (m *Manager) FindNode(key string) string {
 	// node name
-	return m.hashMap.Get(key)
+	nodeName := m.hashMap.Get(key)
+	log.Printf("[Manager] find key in [Node: %v]", nodeName)
+	return nodeName
 }
 
 func (m *Manager) getValueFromRemoteNode(nodeAddress string, key string) ([]byte, error) {
 	url := fmt.Sprintf("%v/%v/?key=%v", nodeAddress, "__jasmine__", key)
 	get, err := http.Get(url)
 	if err != nil {
+		log.Printf("[Manager] %v", err)
 		return nil, err
 	}
 	defer get.Body.Close()
@@ -76,17 +80,29 @@ func (m *Manager) getValueFromRemoteNode(nodeAddress string, key string) ([]byte
 func (m *Manager) StartManageServer(host string) {
 	http.HandleFunc("/api/", func(writer http.ResponseWriter, request *http.Request) {
 		key := request.URL.Query().Get("key")
+		log.Printf("[Manager] search key: %v", key)
 		bytes, err := m.Query(key)
 		if err != nil {
+			log.Printf("[Manager] %v", err)
 			http.Error(writer, err.Error(), 500)
 			return
 		}
 		writer.Header().Set("Content-Type", "application/octet-stream")
 		_, err = writer.Write(bytes)
 		if err != nil {
+			log.Printf("[Manager] %v", err)
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	})
+	if strings.HasPrefix(host, "localhost") {
+		log.Printf("[Manager] start listen [ http://%v ]", host)
+	} else if strings.HasPrefix(host, "http://") {
+		log.Printf("[Manager] start listen [ %v ]", host)
+	} else if strings.HasPrefix(host, ":") {
+		log.Printf("[Manager] start listen [ http://localhost%v ]", host)
+	} else {
+		log.Printf("[Manager] start listen [ %v ]", host)
+	}
 	http.ListenAndServe(host, nil)
 }

@@ -3,7 +3,9 @@ package node
 import (
 	"Jasmine/cache"
 	"fmt"
+	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -88,17 +90,37 @@ const defaultPrefix = "__jasmine__"
 func (node *Node) StartNodeServer(host string) {
 	http.HandleFunc("/__jasmine__/", func(writer http.ResponseWriter, request *http.Request) {
 		key := request.URL.Query().Get("key")
+		log.Printf("[Node: %v] search key: %v", node.name, key)
 		v, err := node.Get(key)
 		if err != nil {
+			log.Printf("[Node: %v] %v", node.name, err)
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if len(v) == 0 {
+			log.Printf("[Node: %v] %v", node.name, "effective key, empty value")
+			writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			writer.Header().Set("X-Content-Type-Options", "nosniff")
+			writer.WriteHeader(http.StatusNotFound)
+			writer.Write([]byte("empty value"))
 			return
 		}
 		writer.Header().Set("Content-Type", "application/octet-stream")
 		_, err = writer.Write(v)
 		if err != nil {
+			log.Printf("[Node: %v] %v", node.name, err)
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	})
+	if strings.HasPrefix(host, "localhost") {
+		log.Printf("[Node: %v] start listen [ http://%v ]", node.name, host)
+	} else if strings.HasPrefix(host, "http://") {
+		log.Printf("[Node: %v] start listen [ %v ]", node.name, host)
+	} else if strings.HasPrefix(host, ":") {
+		log.Printf("[Node: %v] start listen [ http://localhost%v ]", node.name, host)
+	} else {
+		log.Printf("[Node: %v] start listen [ %v ]", node.name, host)
+	}
 	http.ListenAndServe(host, nil)
 }

@@ -36,11 +36,20 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(node.Memory())
 	manager := manage.NewManger()
-	manager.AddNode("pigeon", "http://localhost:9999")
-	manager.Register()
-	go manager.StartManageServer(":7777")
 
-	node.StartNodeServer(":9999")
+	node1 := node2.NewNode("thyme", 7777, func(key string) ([]byte, error) {
+		r, b := db[key]
+		if b {
+			return r, nil
+		} else {
+			return nil, nil
+		}
+	})
+	manager.AddNode("pigeon", "http://localhost:9999")
+	manager.AddNode("thyme", "http://localhost:8888")
+	manager.Register()
+	go node1.StartNodeServer(":8888")
+	go node.StartNodeServer(":9999")
+	manager.StartManageServer(":7777")
 }
