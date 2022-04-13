@@ -1,34 +1,15 @@
 package main
 
-import (
-	"fmt"
-	"time"
-)
-
-func test() {
-	ticker := time.NewTicker(time.Second * 1)
-	go func() {
-		for range ticker.C{
-			fmt.Println("114514")
-		}
-	}()
+var db = map[string]interface{}{
+	"114":    "114",
+	"514":    1919810,
+	"114514": "==",
 }
 
 func main() {
-	test()
-	time.Sleep(time.Second*7)
-	fmt.Println(114)
-	time.Sleep(time.Second*7)
-	//node := node2.NewNode("114514", 1, nil)
-
-	// seconds , not milliseconds
-	fmt.Println(time.Now().Unix())
-
-	ticker := time.NewTicker(time.Second * 1)
-	go func() {
-		for range ticker.C {
-			fmt.Println("114514")
-		}
-	}()
-
+	//node := node2.NewNode("pigeon", 114, func(key string) (interface{}, error) {
+	//	log.Println("can't find key, read from db")
+	//	r, _ := db[key]
+	//	return r, nil
+	//})
 }

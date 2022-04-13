@@ -12,7 +12,7 @@ type Node struct {
 	callback Callback
 }
 
-type Callback func(key string) ([]byte, error)
+type Callback func(key string) (interface{}, error)
 
 type OOMError struct {
 	name string
@@ -22,14 +22,17 @@ func (e *OOMError) Error() string {
 	return fmt.Sprintf("Node %v: Cache Out of Memory", e.name)
 }
 
-const defaultRespiration = int64(time.Hour * 3)
+const defaultAutoClearTime = time.Hour * 1
+const defaultRespiration = time.Hour * 3
 
 func NewNode(name string, maxMemory int, callback Callback) *Node {
-	return &Node{
+	node := &Node{
 		name:     name,
 		cache:    cache.NewCache(maxMemory),
 		callback: callback,
 	}
+	go node.autoClearExpireCache(defaultAutoClearTime)
+	return node
 }
 
 func (node *Node) autoClearExpireCache(t time.Duration) {
@@ -45,7 +48,7 @@ func (node *Node) Name() string {
 	return node.name
 }
 
-func (node *Node) Get(key string) ([]byte, error) {
+func (node *Node) Get(key string) (interface{}, error) {
 	res, mark := node.cache.Get(key)
 	if mark {
 		return res, nil
@@ -54,22 +57,13 @@ func (node *Node) Get(key string) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		} else {
-			err := node.Put(key, r, defaultRespiration)
-			if err != nil {
-				return r, nil
-			} else {
-				return nil, &OOMError{node.name}
-			}
+			node.Put(key, r, defaultRespiration)
+			return r, nil
 		}
 	}
 	//return node.cache.Get(key)
 }
 
-func (node *Node) Put(key string, value []byte, respiration int64) error {
-	f := node.cache.Put(key, value, respiration)
-	if f {
-		return nil
-	} else {
-		return &OOMError{node.name}
-	}
+func (node *Node) Put(key string, value interface{}, respiration time.Duration) {
+	node.cache.Put(key, value, int64(respiration))
 }
