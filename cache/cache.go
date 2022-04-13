@@ -29,9 +29,14 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	}
 }
 
-func (c *Cache) Put(key string, value []byte, expiration int64) {
+func (c *Cache) Put(key string, value []byte, expiration int64) bool {
+	size := len(value)
+	if c.maxMemory-c.memory < size {
+		return false
+	}
 	c.core[key] = NewValue(value, expiration)
-	c.memory += len(value)
+	c.memory += size
+	return true
 }
 
 func (c *Cache) CacheMemory() int {
@@ -40,4 +45,12 @@ func (c *Cache) CacheMemory() int {
 
 func (c *Cache) MaxCacheMemory() int {
 	return c.maxMemory
+}
+
+func (c *Cache) CleanExpireCache() {
+	for k, v := range c.core {
+		if v.expiration < time.Now().Unix() {
+			delete(c.core, k)
+		}
+	}
 }
