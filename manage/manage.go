@@ -41,7 +41,8 @@ func (m *Manager) Register() {
 }
 
 func (m *Manager) Query(key string) ([]byte, error) {
-	bytes, err := m.getValueFromRemoteNode(m.FindNode(key), key)
+	host := m.nodes[m.FindNode(key)]
+	bytes, err := m.getValueFromRemoteNode(host, key)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,11 @@ func (m *Manager) getValueFromRemoteNode(nodeAddress string, key string) ([]byte
 		log.Printf("[node %v] return %v", nodeAddress, get.StatusCode)
 		return nil, nil
 	} else {
-		return ioutil.ReadAll(get.Body)
+		bytes, err := ioutil.ReadAll(get.Body)
+		if err != nil {
+			return nil, nil
+		}
+		return bytes, nil
 	}
 }
 

@@ -15,7 +15,10 @@ func main() {
 	node := node2.NewNode("pigeon", 114, func(key string) ([]byte, error) {
 		return []byte("ssss"), nil
 	})
-	go node.StartNodeServer(":9999")
 	manager := manage.NewManger()
-	manager.StartManageServer(":7777")
+	manager.AddNode("pigeon", "http://localhost:9999")
+	manager.Register()
+	go manager.StartManageServer(":7777")
+
+	node.StartNodeServer(":9999")
 }

@@ -82,8 +82,7 @@ func (node *Node) Put(key string, value []byte, respiration time.Duration) error
 const defaultPrefix = "__jasmine__"
 
 func (node *Node) StartNodeServer(host string) {
-	mx := http.NewServeMux()
-	mx.HandleFunc("/__jasmine__/", func(writer http.ResponseWriter, request *http.Request) {
+	http.HandleFunc("/__jasmine__/", func(writer http.ResponseWriter, request *http.Request) {
 		key := request.URL.Query().Get("key")
 		v, err := node.Get(key)
 		if err != nil {
