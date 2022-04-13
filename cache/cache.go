@@ -37,6 +37,18 @@ func (c *Cache) Put(key string, value []byte, expiration int64) bool {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	size := len(value)
+	v, t := c.core[key]
+	// key exist
+	if t {
+		if c.maxMemory-c.memory < len(value)-len(v.value) {
+			return false
+		} else {
+			c.memory = c.memory + len(v.value) - len(value)
+			c.core[key] = NewValue(value, expiration)
+			return true
+		}
+
+	}
 	if c.maxMemory-c.memory < size {
 		return false
 	}

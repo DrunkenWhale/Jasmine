@@ -49,6 +49,10 @@ func (node *Node) Name() string {
 	return node.name
 }
 
+func (node *Node) Memory() int {
+	return node.cache.CacheMemory()
+}
+
 func (node *Node) Get(key string) ([]byte, error) {
 	res, mark := node.cache.Get(key)
 	if mark {
