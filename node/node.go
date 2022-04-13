@@ -72,6 +72,8 @@ func (node *Node) Put(key string, value []byte, respiration time.Duration) error
 	if f {
 		return nil
 	} else {
-		return &OOMError{node.name}
+		return &OOMError{
+			name: node.name,
+		}
 	}
 }
