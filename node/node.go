@@ -12,7 +12,7 @@ type Node struct {
 	callback Callback
 }
 
-type Callback func(key string) (interface{}, error)
+type Callback func(key string) ([]byte, error)
 
 type OOMError struct {
 	name string
@@ -48,7 +48,7 @@ func (node *Node) Name() string {
 	return node.name
 }
 
-func (node *Node) Get(key string) (interface{}, error) {
+func (node *Node) Get(key string) ([]byte, error) {
 	res, mark := node.cache.Get(key)
 	if mark {
 		return res, nil
@@ -57,13 +57,21 @@ func (node *Node) Get(key string) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		} else {
-			node.Put(key, r, defaultRespiration)
-			return r, nil
+			err := node.Put(key, r, defaultRespiration)
+			if err != nil {
+				return nil, &OOMError{node.name}
+			} else {
+				return r, nil
+			}
 		}
 	}
-	//return node.cache.Get(key)
 }
 
-func (node *Node) Put(key string, value interface{}, respiration time.Duration) {
-	node.cache.Put(key, value, int64(respiration))
+func (node *Node) Put(key string, value []byte, respiration time.Duration) error {
+	f := node.cache.Put(key, value, int64(respiration))
+	if f {
+		return nil
+	} else {
+		return &OOMError{node.name}
+	}
 }
