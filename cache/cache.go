@@ -47,7 +47,6 @@ func (c *Cache) Put(key string, value []byte, expiration int64) bool {
 			c.core[key] = NewValue(value, expiration)
 			return true
 		}
-
 	}
 	if c.maxMemory-c.memory < size {
 		return false
@@ -69,6 +68,7 @@ func (c *Cache) CleanExpireCache() {
 	for k, v := range c.core {
 		if v.expiration < time.Now().Unix() {
 			delete(c.core, k)
+			c.memory -= len(v.value)
 		}
 	}
 }
