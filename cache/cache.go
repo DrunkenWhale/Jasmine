@@ -1,11 +1,15 @@
 package cache
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type Cache struct {
 	core      map[string]*Value
 	memory    int
 	maxMemory int
+	mutex     sync.Mutex
 }
 
 func NewCache(maxMemory int) *Cache {
@@ -30,6 +34,8 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 }
 
 func (c *Cache) Put(key string, value []byte, expiration int64) bool {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	size := len(value)
 	if c.maxMemory-c.memory < size {
 		return false

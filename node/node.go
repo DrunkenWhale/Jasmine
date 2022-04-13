@@ -3,6 +3,7 @@ package node
 import (
 	"Jasmine/cache"
 	"fmt"
+	"net/http"
 	"time"
 )
 
@@ -76,4 +77,25 @@ func (node *Node) Put(key string, value []byte, respiration time.Duration) error
 			name: node.name,
 		}
 	}
+}
+
+const defaultPrefix = "__jasmine__"
+
+func (node *Node) StartNodeServer(host string) {
+	mx := http.NewServeMux()
+	mx.HandleFunc("/__jasmine__/", func(writer http.ResponseWriter, request *http.Request) {
+		key := request.URL.Query().Get("key")
+		v, err := node.Get(key)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/octet-stream")
+		_, err = writer.Write(v)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+	http.ListenAndServe(host, nil)
 }

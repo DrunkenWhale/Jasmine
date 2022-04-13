@@ -1,8 +1,8 @@
 package main
 
 import (
+	"Jasmine/manage"
 	node2 "Jasmine/node"
-	"fmt"
 )
 
 var db = map[string]interface{}{
@@ -15,5 +15,7 @@ func main() {
 	node := node2.NewNode("pigeon", 114, func(key string) ([]byte, error) {
 		return []byte("ssss"), nil
 	})
-	fmt.Println(node.Get("114"))
+	go node.StartNodeServer(":9999")
+	manager := manage.NewManger()
+	manager.StartManageServer(":7777")
 }
