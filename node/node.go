@@ -75,7 +75,7 @@ func (node *Node) Get(key string) ([]byte, error) {
 }
 
 func (node *Node) Put(key string, value []byte, respiration time.Duration) error {
-	f := node.cache.Put(key, value, int64(respiration))
+	f := node.cache.Put(key, value, int64(respiration/1000000000))
 	if f {
 		return nil
 	} else {
@@ -97,7 +97,7 @@ func (node *Node) StartNodeServer(host string) {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if len(v) == 0 {
+		if len(v) == 0 || v == nil {
 			log.Printf("[Node: %v] %v", node.name, "effective key, empty value")
 			writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
 			writer.Header().Set("X-Content-Type-Options", "nosniff")
