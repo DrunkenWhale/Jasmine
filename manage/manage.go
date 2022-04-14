@@ -58,7 +58,7 @@ func (m *Manager) FindNode(key string) string {
 }
 
 func (m *Manager) getValueFromRemoteNode(nodeAddress string, key string) ([]byte, error) {
-	url := fmt.Sprintf("%v/%v/?key=%v", nodeAddress, "__jasmine__", key)
+	url := fmt.Sprintf("%v/%v/?key=%v", "http://"+nodeAddress, "__jasmine__", key)
 	get, err := http.Get(url)
 	if err != nil {
 		log.Printf("[Manager] %v", err)

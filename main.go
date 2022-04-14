@@ -1,25 +1,22 @@
 package main
 
 import (
-	"Jasmine/manage"
 	node2 "Jasmine/node"
-	"fmt"
-	"math/rand"
+	"flag"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 var db = map[string][]byte{
-	"514":    []byte("1919810"),
-	"114514": []byte("=="),
+	"1":   []byte("14514"),
+	"11":  []byte("4514"),
+	"114": []byte("514"),
 }
 
 func main() {
-	for i := 115; i < 1145414; i++ {
-		k := strconv.Itoa(rand.Int())
-		db[strconv.Itoa(i)] = []byte(k)
-	}
+	var port int
+	flag.IntVar(&port, "port", 8001, "Node's port")
+	flag.Parse()
 	node := node2.NewNode("pigeon", 377777, func(key string) ([]byte, error) {
 		r, b := db[key]
 		if b {
@@ -28,29 +25,36 @@ func main() {
 			return nil, http.ErrServerClosed
 		}
 	})
-	err := node.Put("114", []byte("514"), time.Second*7)
-	err = node.Put("114", []byte("514"), time.Second*7)
-	err = node.Put("114", []byte("514"), time.Second*7)
-	err = node.Put("114", []byte("514"), time.Second*7)
-	err = node.Put("114", []byte("514"), time.Second*7)
-	if err != nil {
-		fmt.Println(err)
-	}
-	manager := manage.NewManger()
-
-	//node1 := node2.NewNode("thyme", 7777, func(key string) ([]byte, error) {
-	//	r, b := db[key]
-	//	if b {
-	//		return r, nil
-	//	} else {
-	//		return nil, nil
-	//	}
-	//})
-	manager.AddNode("pigeon", "http://localhost:9999")
-	//manager.AddNode("thyme", "http://localhost:8888")
-	manager.Register()
-	//go node1.StartNodeServer(":8888")
-	go manager.StartManageServer(":7777")
-	node.StartNodeServer(":9999")
-
+	node.StartNodeServer(":" + strconv.Itoa(port))
 }
+
+//
+//func main() {
+//	file, err := os.Open("nodes.json")
+//	defer file.Close()
+//	if err != nil {
+//		log.Println("Config file : nodes.json not exists")
+//		return
+//	}
+//	bytes, err := ioutil.ReadAll(file)
+//	if err != nil {
+//		log.Println(err)
+//		return
+//	}
+//	var nodes []config.NodeDescribe
+//	err = json.Unmarshal(bytes, &nodes)
+//	if err != nil {
+//		log.Println(err)
+//		return
+//	}
+//	var port int
+//	flag.IntVar(&port, "port", 7777, "Manager server port")
+//	flag.Parse()
+//	manager := manage.NewManger()
+//	for _, nodes := range nodes {
+//		manager.AddNode(nodes.Name, nodes.Address)
+//	}
+//	manager.Register()
+//	manager.StartManageServer(":" + strconv.Itoa(port))
+//
+//}
