@@ -4,9 +4,11 @@ A distributed cache
 
 its structure like this:
 
-                |--> node
-
-user -> manager ---> node |--> node
+```text
+                 /---> node
+user -> manager  -----> node  
+                 \---> node
+```
 
 use __Consistent Hashing__ algorithm to find designated key
 
