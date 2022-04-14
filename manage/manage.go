@@ -67,7 +67,7 @@ func (m *Manager) getValueFromRemoteNode(nodeAddress string, key string) ([]byte
 	defer get.Body.Close()
 	if get.StatusCode != 200 {
 		log.Printf("[node %v] return %v", nodeAddress, get.StatusCode)
-		return nil, nil
+		return nil, &NodeNoResponse{}
 	} else {
 		bytes, err := ioutil.ReadAll(get.Body)
 		if err != nil {
@@ -84,7 +84,7 @@ func (m *Manager) StartManageServer(host string) {
 		bytes, err := m.Query(key)
 		if err != nil {
 			log.Printf("[Manager] %v", err)
-			http.Error(writer, err.Error(), 500)
+			http.Error(writer, err.Error(), 404)
 			return
 		}
 		writer.Header().Set("Content-Type", "application/octet-stream")
@@ -105,4 +105,11 @@ func (m *Manager) StartManageServer(host string) {
 		log.Printf("[Manager] start listen [ %v ]", host)
 	}
 	http.ListenAndServe(host, nil)
+}
+
+type NodeNoResponse struct {
+}
+
+func (e *NodeNoResponse) Error() string {
+	return "Node has no response"
 }

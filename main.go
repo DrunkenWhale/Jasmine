@@ -5,18 +5,18 @@ import (
 	node2 "Jasmine/node"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"strconv"
 	"time"
 )
 
 var db = map[string][]byte{
-	"114":    []byte("114"),
 	"514":    []byte("1919810"),
 	"114514": []byte("=="),
 }
 
 func main() {
-	for i := 0; i < 1145414; i++ {
+	for i := 115; i < 1145414; i++ {
 		k := strconv.Itoa(rand.Int())
 		db[strconv.Itoa(i)] = []byte(k)
 	}
@@ -25,7 +25,7 @@ func main() {
 		if b {
 			return r, nil
 		} else {
-			return nil, nil
+			return nil, http.ErrServerClosed
 		}
 	})
 	err := node.Put("114", []byte("514"), time.Second*7)
@@ -38,18 +38,19 @@ func main() {
 	}
 	manager := manage.NewManger()
 
-	node1 := node2.NewNode("thyme", 7777, func(key string) ([]byte, error) {
-		r, b := db[key]
-		if b {
-			return r, nil
-		} else {
-			return nil, nil
-		}
-	})
+	//node1 := node2.NewNode("thyme", 7777, func(key string) ([]byte, error) {
+	//	r, b := db[key]
+	//	if b {
+	//		return r, nil
+	//	} else {
+	//		return nil, nil
+	//	}
+	//})
 	manager.AddNode("pigeon", "http://localhost:9999")
-	manager.AddNode("thyme", "http://localhost:8888")
+	//manager.AddNode("thyme", "http://localhost:8888")
 	manager.Register()
-	go node1.StartNodeServer(":8888")
-	go node.StartNodeServer(":9999")
-	manager.StartManageServer(":7777")
+	//go node1.StartNodeServer(":8888")
+	go manager.StartManageServer(":7777")
+	node.StartNodeServer(":9999")
+
 }
